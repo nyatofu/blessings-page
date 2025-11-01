@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>礼物弹窗</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background: #a7c5eb;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .main-window {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 350px;
+            background: #f9f9f9;
+            border-radius: 12px;
+            box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000;
+        }
+
+        @keyframes popIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        .title-bar {
+            background: #f0f0f0;
+            padding: 6px 10px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .window-controls {
+            display: flex;
+            gap: 5px;
+            margin-right: 8px;
+        }
+
+        .control-button {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .close {
+            background: #ff5f57;
+        }
+
+        .minimize {
+            background: #febc2e;
+        }
+
+        .maximize {
+            background: #28c840;
+        }
+
+        .title-bar-title {
+            text-align: left;
+            font-size: 11px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .window-content {
+            padding: 18px;
+        }
+
+        .window-header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .window-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 6px;
+        }
+
+        .window-text {
+            font-size: 13px;
+            color: #777;
+            line-height: 1.5;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .window-actions {
+            display: flex;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 6px 16px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+        }
+
+        .btn-primary {
+            background: #4a90e2;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #3a7bc8;
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(74, 144, 226, 0.3);
+        }
+
+        .gift-window {
+            position: absolute;
+            width: 240px;
+            border-radius: 10px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            animation: floatIn 0.2s ease-out, bounce 0.4s ease-in-out 0.2s 1;
+            z-index: 1;
+            cursor: default; /* 改为默认光标，因为不能点击关闭 */
+        }
+
+        @keyframes floatIn {
+            from {
+                opacity: 0;
+                transform: translateY(15px) scale(0.85);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0) scale(1); }
+            30% { transform: translateY(-8px) scale(1.03); }
+            60% { transform: translateY(0) scale(0.97); }
+        }
+
+        .gift-title-bar {
+            padding: 4px 8px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .gift-title {
+            text-align: left;
+            font-size: 10px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .gift-content {
+            padding: 12px;
+            text-align: center;
+        }
+
+        .gift-message {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        /* 不同颜色的随机窗口 */
+        .color-purple { background: #f9f1f9; }
+        .color-purple .gift-title-bar { background: #f2e6f2; }
+
+        .color-green { background: #f1f9f1; }
+        .color-green .gift-title-bar { background: #e6f2e6; }
+
+        .color-pink { background: #f9f1f4; }
+        .color-pink .gift-title-bar { background: #f2e6ec; }
+
+        .color-cyan { background: #f1f9f9; }
+        .color-cyan .gift-title-bar { background: #e6f2f2; }
+
+        .color-red { background: #f9f1f1; }
+        .color-red .gift-title-bar { background: #f2e6e6; }
+
+        .color-orange { background: #f9f6f1; }
+        .color-orange .gift-title-bar { background: #f2eee6; }
+
+        .color-yellow { background: #f9f9f1; }
+        .color-yellow .gift-title-bar { background: #f2f2e6; }
+    </style>
+</head>
+<body>
+    <div class="main-window" id="mainWindow">
+        <div class="title-bar">
+            <div class="window-controls">
+                <div class="control-button close"></div>
+                <div class="control-button minimize"></div>
+                <div class="control-button maximize"></div>
+            </div>
+            <div class="title-bar-title">一份礼物</div>
+        </div>
+        <div class="window-content">
+            <div class="window-header">
+                <div class="window-title">一份礼物</div>
+            </div>
+            <div class="window-text">这是一份礼物，要打开吗</div>
+            <div class="window-actions">
+                <button class="btn btn-primary" id="openGiftBtn">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const openGiftBtn = document.getElementById('openGiftBtn');
+            const mainWindow = document.getElementById('mainWindow');
+            
+            // 礼物内容数组
+            const giftMessages = [
+                "多喝水哦～",
+                "保持微笑啊",
+                "梦想成真",
+                "愿所有烦恼都消失",
+                "学会爱自己才能更好地爱别人",
+                "每天要元气满满",
+                "顺顺利利",
+                "要相信自己奥",
+                "别熬夜",
+                "期待下次见面",
+                "记得好好护肤",
+                "别太累啦，偶尔偷偷懒也好",
+                "好好爱自己",
+                "金榜题名",
+                "记得吃水果",
+                "我想你了",
+                "天冷了，多穿衣服",
+                "早点休息",
+                "珍惜每一刻",
+                "你超棒的"
+            ];
+            
+            let windowCount = 0;
+            let windowQueue = []; // 用于管理窗口的队列
+            
+            // 打开礼物按钮点击事件
+            openGiftBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // 隐藏主窗口
+                mainWindow.style.opacity = '0';
+                mainWindow.style.transform = 'translate(-50%, -50%) scale(0.8)';
+                setTimeout(() => {
+                    mainWindow.style.display = 'none';
+                }, 300);
+                
+                // 开始生成礼物窗口
+                startGeneratingGifts();
+            });
+            
+            // 阻止主窗口被关闭
+            const controlButtons = document.querySelectorAll('.main-window .control-button');
+            controlButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                });
+            });
+            
+            // 开始生成礼物窗口
+            function startGeneratingGifts() {
+                // 立即生成一些窗口
+                for (let i = 0; i < 5; i++) {
+                    setTimeout(() => {
+                        createGiftWindow();
+                    }, i * 100);
+                }
+                
+                // 持续生成窗口，每150ms生成一个
+                setInterval(createGiftWindow, 150);
+            }
+            
+            // 创建礼物窗口
+            function createGiftWindow() {
+                if (windowCount >= 300) {
+                    // 如果达到300个窗口，移除最旧的窗口
+                    if (windowQueue.length > 0) {
+                        const oldestWindow = windowQueue.shift();
+                        if (oldestWindow && oldestWindow.parentNode) {
+                            oldestWindow.style.opacity = '0';
+                            setTimeout(() => {
+                                oldestWindow.parentNode.removeChild(oldestWindow);
+                            }, 150); // 加速淡出效果
+                        }
+                    }
+                }
+                
+                // 随机选择一个消息
+                const randomMessage = giftMessages[Math.floor(Math.random() * giftMessages.length)];
+                
+                // 随机选择颜色
+                const colors = ['purple', 'green', 'pink', 'cyan', 'red', 'orange', 'yellow'];
+                const randomColor = colors[Math.floor(Math.random() * colors.length)];
+                
+                // 创建窗口元素
+                const giftWindow = document.createElement('div');
+                giftWindow.className = `gift-window color-${randomColor}`;
+                
+                // 随机位置
+                const maxX = window.innerWidth - 240;
+                const maxY = window.innerHeight - 100;
+                const randomX = Math.floor(Math.random() * maxX);
+                const randomY = Math.floor(Math.random() * maxY);
+                
+                giftWindow.style.left = `${randomX}px`;
+                giftWindow.style.top = `${randomY}px`;
+                
+                // 设置窗口内容
+                giftWindow.innerHTML = `
+                    <div class="gift-title-bar">
+                        <div class="gift-title">💝提示</div>
+                    </div>
+                    <div class="gift-content">
+                        <div class="gift-message">${randomMessage}</div>
+                    </div>
+                `;
+                
+                // 不添加点击关闭事件，窗口不可点击关闭
+                // 窗口将一直显示直到达到数量限制时被自动移除
+                
+                document.body.appendChild(giftWindow);
+                
+                // 添加到队列
+                windowQueue.push(giftWindow);
+                windowCount++;
+            }
+        });
+    </script>
+</body>
+</html>
